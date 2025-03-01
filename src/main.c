@@ -10,18 +10,18 @@
 #include "serial_communication/inc/command_handler.h"
 
 //DISPLAY GPIO
-SETUP_PIN(DISPLAY_SEGMENT_A, D, 7);                  //PD7
-SETUP_PIN(DISPLAY_SEGMENT_B, D, 2);                  //PD2
-SETUP_PIN(DISPLAY_SEGMENT_C, B, 7);                  //PB7
-SETUP_PIN(DISPLAY_SEGMENT_D, B, 2);                  //PB2
-SETUP_PIN(DISPLAY_SEGMENT_E, B, 1);                  //PB1
-SETUP_PIN(DISPLAY_SEGMENT_F, D, 6);                  //PD6
-SETUP_PIN(DISPLAY_SEGMENT_G, D, 4);                  //PD4
-SETUP_PIN(DISPLAY_SEGMENT_DP, B, 0);                 //PB0
+SETUP_PIN(DISPLAY_SEGMENT_A, B, 1);                  //PB1
+SETUP_PIN(DISPLAY_SEGMENT_B, D, 6);                  //PD6
+SETUP_PIN(DISPLAY_SEGMENT_C, D, 4);                  //PD4
+SETUP_PIN(DISPLAY_SEGMENT_D, B, 0);                  //PB0
+SETUP_PIN(DISPLAY_SEGMENT_E, D, 7);                  //PD7
+SETUP_PIN(DISPLAY_SEGMENT_F, D, 2);                  //PD2
+SETUP_PIN(DISPLAY_SEGMENT_G, B, 7);                  //PB7
+SETUP_PIN(DISPLAY_SEGMENT_DP, B, 2);                 //PB2
 
-SETUP_PIN(DISPLAY_REGISTER_0, D, 3);                 //PD3
+SETUP_PIN(DISPLAY_REGISTER_0, D, 5);                 //PD5
 SETUP_PIN(DISPLAY_REGISTER_1, B, 6);                 //PB6
-SETUP_PIN(DISPLAY_REGISTER_2, D, 5);                 //PD5
+SETUP_PIN(DISPLAY_REGISTER_2, D, 3);                 //PD3
 
 
 //Buttons GPIOs
