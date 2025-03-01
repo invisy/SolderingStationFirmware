@@ -4,14 +4,14 @@
 void pid_process(PID_t* pid)
 {
     unsigned short temp = thermoCouple_get_temperature(pid->thermocouple);
-    if(temp == TEMP_ERROR)
+    if(temp == TEMP_ERROR || temp == 0)
     {
         //Overheating protection
-        pid->currentTemperature = 0;
+        temp = 0;
         pid->expectedTemperature = 0;
     }
-    else
-        pid->currentTemperature = temp;
+    
+    pid->currentTemperature = temp;
 
     float error = (pid->expectedTemperature)-(pid->currentTemperature);     //P
 
