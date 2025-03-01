@@ -25,8 +25,8 @@ SETUP_PIN(DISPLAY_REGISTER_2, D, 3);                 //PD3
 
 
 //Buttons GPIOs
-//SETUP_PIN(KEYBOARD_INCREASE_TEMP_GPIO, C, 2);        //PC2
-//SETUP_PIN(KEYBOARD_DECREASE_TEMP_GPIO, C, 1);        //PC1
+SETUP_PIN(KEYBOARD_INCREASE_TEMP_GPIO, C, 0);        //PC2
+SETUP_PIN(KEYBOARD_DECREASE_TEMP_GPIO, C, 1);        //PC1
 
 //Heater0 GPIO
 SETUP_PIN(HEATER0_GPIO, C, 5);                       //PC5
@@ -68,12 +68,18 @@ static void init_drivers()
     heater_init(&heater0, &HEATER0_GPIO);
     thermoCouple_init(&thermocouple0, &THERMOCOUPLE0_CS, &THERMOCOUPLE0_SCLK, &THERMOCOUPLE0_MISO);
 
-    const float pid_period = PID_PERIOD_MS/1000.0;
+    // Configuring buttons
+    gpio_configure_as_input(&KEYBOARD_INCREASE_TEMP_GPIO);
+    gpio_configure_as_input(&KEYBOARD_DECREASE_TEMP_GPIO);
+    gpio_pullup_on(&KEYBOARD_INCREASE_TEMP_GPIO);
+    gpio_pullup_on(&KEYBOARD_DECREASE_TEMP_GPIO);
 
     //Init PID
     float kp = get_pid_coefficient(KP, 0);
     float ki = get_pid_coefficient(KI, 0);
     float kd = get_pid_coefficient(KD, 0);
+
+    const float pid_period = PID_PERIOD_MS/1000.0;
     pid_init(&pids[0], kp, ki, kd, pid_period, &thermocouple0, &heater0);
 
     ui_init(&sevenSegDisplay);
@@ -85,6 +91,8 @@ static void init_drivers()
 int main(void)
 {
     init_drivers();
+    int show_expected_temperature_cycles = 0;
+    int number_of_cycles = 1000/DISPLAY_TEMP_UPDATE_TIME*2;
 
     while(1)
     {   
@@ -97,8 +105,36 @@ int main(void)
 
         MILLIS_DELAY(SHOW_CURRENT_TEMPERATURE, DISPLAY_TEMP_UPDATE_TIME)
         {
-            ui_print_current_temperature(pids[0].currentTemperature);
+            if (show_expected_temperature_cycles > 0)
+                ui_print_desired_temperature(pids[0].expectedTemperature);
+            else
+                ui_print_current_temperature(pids[0].currentTemperature);
+            show_expected_temperature_cycles--;
         }
+
+        
+        if(gpio_is_low(&KEYBOARD_INCREASE_TEMP_GPIO))
+        {
+            MILLIS_DELAY(KEYBOARD_INCREASE_TEMP_CLICK, BUTTONS_PAUSE)
+            {
+                if(pids[0].expectedTemperature < 500)
+                    pids[0].expectedTemperature += 10;
+                show_expected_temperature_cycles = number_of_cycles;
+            }
+        } 
+        
+
+        
+        if(gpio_is_low(&KEYBOARD_DECREASE_TEMP_GPIO))
+        {
+            MILLIS_DELAY(KEYBOARD_DECREASE_TEMP_CLICK, BUTTONS_PAUSE)
+            {
+                if(pids[0].expectedTemperature >= 10)
+                    pids[0].expectedTemperature -= 10;
+                show_expected_temperature_cycles = number_of_cycles;
+            }
+        }
+        
         
         ui_update();
     }

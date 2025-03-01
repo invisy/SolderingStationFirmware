@@ -28,7 +28,7 @@ void ui_print_desired_temperature(unsigned short value)
 {
     static char dotEnabled = 0;
 
-    MILLIS_DELAY(PRINT_DOT, 500)
+    MILLIS_DELAY(PRINT_DOT, 300)
     {
         dotEnabled ^= 1;
     }
@@ -43,6 +43,14 @@ void ui_print_desired_temperature(unsigned short value)
         seven_seg_display_print_symbol(segmentDisplay, seven_seg_display_get_symbol(segmentDisplay, 0) & 0x7F, 0);  //7F = 0x01111111
     }
 }
+
+void ui_print_err(unsigned short value)
+{
+    seven_seg_display_clear(segmentDisplay);
+    seven_seg_display_print_symbol(segmentDisplay, E_SYMBOL, 1);
+    seven_seg_display_print_number(segmentDisplay, value, 2);
+}
+
 
 void ui_update()
 {

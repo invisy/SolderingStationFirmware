@@ -5,13 +5,20 @@ static unsigned char digits_dictionary[10] = { 0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6
 
 void seven_seg_display_print_number(SevenSegDisplay_t* display, short number, unsigned char position)
 {
-    while (number > 0)
-    {
-        unsigned char digit = number % 10;
-        seven_seg_display_print_symbol(display, digits_dictionary[digit], position);
-        if(position < 3)
-            position++;
-        number /= 10;
+    seven_seg_display_clear(display);
+
+    if (number == 0) {
+        seven_seg_display_print_symbol(display, digits_dictionary[number], position);
+    }
+    else {
+        while (number > 0)
+        {
+            unsigned char digit = number % 10;
+            seven_seg_display_print_symbol(display, digits_dictionary[digit], position);
+            number /= 10;
+            if(position < 2)
+                position++;
+        }
     }
 }
 
