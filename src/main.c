@@ -23,18 +23,18 @@ SETUP_PIN(DISPLAY_REGISTER_0, D, 5);                 //PD5
 SETUP_PIN(DISPLAY_REGISTER_1, B, 6);                 //PB6
 SETUP_PIN(DISPLAY_REGISTER_2, D, 3);                 //PD3
 
-
-//Buttons GPIOs
-SETUP_PIN(KEYBOARD_INCREASE_TEMP_GPIO, C, 0);        //PC2
-SETUP_PIN(KEYBOARD_DECREASE_TEMP_GPIO, C, 1);        //PC1
-
 //Heater0 GPIO
 SETUP_PIN(HEATER0_GPIO, C, 5);                       //PC5
 
 //Thermocouple GPIOs
-SETUP_PIN(THERMOCOUPLE0_CS, C, 4);                   //PC4
-SETUP_PIN(THERMOCOUPLE0_SCLK, C, 3);                 //PC3
+SETUP_PIN(THERMOCOUPLE0_SCLK, C, 4);                 //PC4
+SETUP_PIN(THERMOCOUPLE0_CS, C, 3);                   //PC3
 SETUP_PIN(THERMOCOUPLE0_MISO, C, 2);                 //PC2
+
+//Buttons GPIOs
+SETUP_PIN(KEYBOARD_DECREASE_TEMP_GPIO, C, 1);        //PC1
+SETUP_PIN(KEYBOARD_INCREASE_TEMP_GPIO, C, 0);        //PC0
+SETUP_PIN(STAND_DETECT_GPIO, B, 4);        //PB4
 
 
 static Thermocouple_t thermocouple0;
@@ -71,8 +71,10 @@ static void init_drivers()
     // Configuring buttons
     gpio_configure_as_input(&KEYBOARD_INCREASE_TEMP_GPIO);
     gpio_configure_as_input(&KEYBOARD_DECREASE_TEMP_GPIO);
+    gpio_configure_as_input(&STAND_DETECT_GPIO);
     gpio_pullup_on(&KEYBOARD_INCREASE_TEMP_GPIO);
     gpio_pullup_on(&KEYBOARD_DECREASE_TEMP_GPIO);
+    gpio_pullup_on(&STAND_DETECT_GPIO);
 
     //Init PID
     float kp = get_pid_coefficient(KP, 0);
@@ -93,6 +95,8 @@ int main(void)
     init_drivers();
     int show_expected_temperature_cycles = 0;
     int number_of_cycles = 1000/DISPLAY_TEMP_UPDATE_TIME*2;
+    unsigned short is_on_stand = 0;
+    unsigned short is_on_stand_remembered_temperature = 0;
 
     while(1)
     {   
@@ -106,35 +110,66 @@ int main(void)
         MILLIS_DELAY(SHOW_CURRENT_TEMPERATURE, DISPLAY_TEMP_UPDATE_TIME)
         {
             if (show_expected_temperature_cycles > 0)
-                ui_print_desired_temperature(pids[0].expectedTemperature);
+                if (is_on_stand)
+                    ui_print_desired_temperature(is_on_stand_remembered_temperature);
+                else
+                    ui_print_desired_temperature(pids[0].expectedTemperature);
             else
-                ui_print_current_temperature(pids[0].currentTemperature);
+                ui_print_current_temperature(pids[0].currentTemperature, is_on_stand);
             show_expected_temperature_cycles--;
         }
-
         
         if(gpio_is_low(&KEYBOARD_INCREASE_TEMP_GPIO))
         {
             MILLIS_DELAY(KEYBOARD_INCREASE_TEMP_CLICK, BUTTONS_PAUSE)
             {
-                if(pids[0].expectedTemperature < 500)
+                if (is_on_stand)
+                {
+                    if (is_on_stand_remembered_temperature < 500)
+                        is_on_stand_remembered_temperature += 10;
+                }
+                else if(pids[0].expectedTemperature < 500)
                     pids[0].expectedTemperature += 10;
                 show_expected_temperature_cycles = number_of_cycles;
             }
         } 
         
-
-        
         if(gpio_is_low(&KEYBOARD_DECREASE_TEMP_GPIO))
         {
             MILLIS_DELAY(KEYBOARD_DECREASE_TEMP_CLICK, BUTTONS_PAUSE)
             {
-                if(pids[0].expectedTemperature >= 10)
+                if (is_on_stand)
+                {
+                    if (is_on_stand_remembered_temperature >=10)
+                        is_on_stand_remembered_temperature -= 10;
+                
+                }
+                else if(pids[0].expectedTemperature >= 10)
                     pids[0].expectedTemperature -= 10;
                 show_expected_temperature_cycles = number_of_cycles;
             }
         }
-        
+
+        MILLIS_DELAY(STAND_DETECT, STAND_PAUSE)
+        {
+            if(gpio_is_low(&STAND_DETECT_GPIO))
+            {
+                if (is_on_stand == 0)
+                {
+                    is_on_stand_remembered_temperature = pids[0].expectedTemperature;
+                    pids[0].expectedTemperature = 0;
+                }
+                is_on_stand = 1;
+            }
+            else
+            {
+                if (is_on_stand == 1)
+                {
+                    is_on_stand = 0;
+                    pids[0].expectedTemperature = is_on_stand_remembered_temperature;
+                }
+            }
+        }
         
         ui_update();
     }

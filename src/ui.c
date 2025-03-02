@@ -18,10 +18,12 @@ static void ui_print_temperature(unsigned short value)
         seven_seg_display_print_number(segmentDisplay, value, 0);
 }
 
-void ui_print_current_temperature(unsigned short value)
+void ui_print_current_temperature(unsigned short value, unsigned short on_stand)
 {
     seven_seg_display_clear(segmentDisplay);
     ui_print_temperature(value);
+    if (on_stand)
+        seven_seg_display_print_symbol(segmentDisplay, seven_seg_display_get_symbol(segmentDisplay, 0) | 0x80, 0);  //80 = 0x10000000
 }
 
 void ui_print_desired_temperature(unsigned short value)
@@ -43,6 +45,7 @@ void ui_print_desired_temperature(unsigned short value)
         seven_seg_display_print_symbol(segmentDisplay, seven_seg_display_get_symbol(segmentDisplay, 0) & 0x7F, 0);  //7F = 0x01111111
     }
 }
+
 
 void ui_print_err(unsigned short value)
 {
