@@ -9,15 +9,15 @@ typedef struct
 {
     GPIO_t* heaterGpio;
     volatile bool isEnabled;
-    volatile char powerPercentage;
-    volatile char currentHalfWave;
+    volatile uint8_t powerPercentage;
+    volatile uint8_t currentHalfWave;
 } Heater_t;
 
-void heater_init(volatile Heater_t* heaterPtr, GPIO_t* gpio);
-void heater_enable(volatile Heater_t* heater);
-void heater_disable(volatile Heater_t* heater);
-int heater_get_current_power_percentage(volatile Heater_t* heater);
-void heater_set_power_percentage(volatile Heater_t* heater, int powerPercentage);
+void heater_init(Heater_t* heaterPtr, GPIO_t* gpio);
+void heater_enable(Heater_t* heater);
+void heater_disable(Heater_t* heater);
+uint8_t heater_get_current_power_percentage(Heater_t* heater);
+void heater_set_power_percentage(Heater_t* heater, uint8_t powerPercentage);
 void interrupt();
 
 #endif

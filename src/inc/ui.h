@@ -5,8 +5,8 @@
 
 void ui_init(SevenSegDisplay_t* display);
 void ui_update();
-void ui_print_current_temperature(unsigned short value, unsigned short on_stand);
-void ui_print_desired_temperature(unsigned short value);
-void ui_print_err(unsigned short value);
+void ui_print_current_temperature(uint16_t value, uint8_t on_stand);
+void ui_print_desired_temperature(uint16_t value);
+void ui_print_err(uint16_t value);
 
 #endif

@@ -1,6 +1,9 @@
 #ifndef _COMMANDS_LIST_H_
 #define _COMMANDS_LIST_H_
 
+#include <stdint.h>
+#include "../../core/inc/q15.h"
+
 typedef enum
 {
     GET_PID_DEVICES_NUMBER = 1,
@@ -16,67 +19,67 @@ typedef enum
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    unsigned char number;
+    uint8_t number;
 } get_pid_devices_number_response;
 
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    unsigned char pid_id;
+    uint8_t pid_id;
 } get_pid_current_temperature_request;
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    unsigned short temperature;
+    Q15_t temperature;
 } get_pid_current_temperature_response;
 
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    unsigned char pid_id;
+    uint8_t pid_id;
 } get_pid_expected_temperature_request;
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    unsigned short temperature;
+    Q15_t temperature;
 } get_pid_expected_temperature_response;
 
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    unsigned char pid_id;
+    uint8_t pid_id;
 } get_pid_coefs_request;
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    float kp;
-    float ki;
-    float kd;
+    Q15_t kp;
+    Q15_t ki;
+    Q15_t kd;
 } get_pid_coefs_response;
 
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    unsigned char pid_id;
-    unsigned short temperature;
+    uint8_t pid_id;
+    Q15_t temperature;
 } set_expected_temperature_request;
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    unsigned char pid_id;
-    float kp;
+    uint8_t pid_id;
+    Q15_t kp;
 } set_pid_kp_coef_request;
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    unsigned char pid_id;
-    float ki;
+    uint8_t pid_id;
+    Q15_t ki;
 } set_pid_ki_coef_request;
 
 typedef struct __attribute__ ((__packed__, aligned(1)))
 {
-    unsigned char pid_id;
-    float kd;
+    uint8_t pid_id;
+    Q15_t kd;
 } set_pid_kd_coef_request;
 
 #endif

@@ -6,8 +6,8 @@
 //Parameters
 
 //#define USART_BAUDRATE 9600
-#define MAX_HEATER_TEMPERATURE 500
-#define PID_PERIOD_MS 500
+#define MAX_HEATER_TEMPERATURE 500 //unused
+#define PID_PERIOD_MS 250
 #define DISPLAY_TEMP_UPDATE_TIME 200
 #define PIDS_NUMBER 1
 #define BUTTONS_PAUSE 150
@@ -18,7 +18,7 @@
 #define PID_KP_ADDRESS 0x0
 #define PID_KI_ADDRESS 0x4
 #define PID_KD_ADDRESS 0x8
-#define PID_SECTION_SIZE 0x12
+#define PID_SECTION_SIZE 0xC
 
 
 #endif

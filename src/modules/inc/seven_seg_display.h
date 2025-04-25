@@ -10,14 +10,14 @@ typedef struct
 {
     GPIO_t* segments[SEGMENTS_NUMBER];
     GPIO_t* registers[SYMBOLS_NUMBER];
-    unsigned char symbols[SYMBOLS_NUMBER];
-    unsigned char currentRegister;
+    uint8_t symbols[SYMBOLS_NUMBER];
+    uint8_t currentRegister;
 } SevenSegDisplay_t;
 
 void seven_seg_display_init(SevenSegDisplay_t* display);
 void seven_seg_display_update(SevenSegDisplay_t* display);
 void seven_seg_display_clear(SevenSegDisplay_t* display);
-void seven_seg_display_print_number(SevenSegDisplay_t* display, short number, unsigned char position);
+void seven_seg_display_print_number(SevenSegDisplay_t* display, uint16_t number, uint8_t position);
 
 #define seven_seg_display_get_symbol(display, index)  \
     display->symbols[index]

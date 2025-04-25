@@ -2,7 +2,7 @@
 #include "inc/millis.h"
 #include <util/atomic.h>
 
-static unsigned long counter = 0;
+static volatile uint32_t counter = 0;
 
 static bool configure_timer()
 {
@@ -30,9 +30,9 @@ static bool configure_timer()
     return 1;
 }
 
-unsigned long millis()
+uint32_t millis()
 {
-    unsigned long result = 0;
+    uint32_t result = 0;
 
     static bool firstInit = 1;
     if(firstInit)
@@ -49,10 +49,10 @@ unsigned long millis()
     return result;
 }
 
-bool millis_timeout_check(unsigned long* previousMillis, int intervalMs)
+bool millis_timeout_check(uint32_t* previousMillis, uint32_t intervalMs)
 {
-    unsigned long currentMillis = millis();
-    if ((unsigned long)(currentMillis - *previousMillis) >= intervalMs)
+    uint32_t currentMillis = millis();
+    if ((uint32_t)(currentMillis - *previousMillis) >= intervalMs)
     {
         *previousMillis = currentMillis;
         return 1;

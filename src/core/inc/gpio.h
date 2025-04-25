@@ -9,7 +9,7 @@ typedef struct
 	volatile uint8_t* ddr;
 	volatile uint8_t* port;
 	volatile uint8_t* pin;
-	volatile uint8_t number;
+	uint8_t number;
 } GPIO_t;
 
 #define SETUP_PIN(Name, Port, Pin) 	\

@@ -39,7 +39,7 @@ SETUP_PIN(STAND_DETECT_GPIO, B, 4);        //PB4
 
 static Thermocouple_t thermocouple0;
 static Heater_t heater0;
-static PID_t pids[PIDS_NUMBER];
+static PID_t pid0;
 
 static SevenSegDisplay_t sevenSegDisplay =
 {
@@ -76,27 +76,30 @@ static void init_drivers()
     gpio_pullup_on(&KEYBOARD_DECREASE_TEMP_GPIO);
     gpio_pullup_on(&STAND_DETECT_GPIO);
 
-    //Init PID
-    float kp = get_pid_coefficient(KP, 0);
-    float ki = get_pid_coefficient(KI, 0);
-    float kd = get_pid_coefficient(KD, 0);
+    //Init PID0
+    Q15_t kp = get_pid_coefficient(KP, 0);
+    Q15_t ki = get_pid_coefficient(KI, 0);
+    Q15_t kd = get_pid_coefficient(KD, 0);
 
-    const float pid_period = PID_PERIOD_MS/1000.0;
-    pid_init(&pids[0], kp, ki, kd, pid_period, &thermocouple0, &heater0);
+    const Q15_t pid_period = Q15_div(Q15_from_int(PID_PERIOD_MS), Q15_from_int(1000));
+    pid_init(&pid0, kp, ki, kd, pid_period);
 
     ui_init(&sevenSegDisplay);
 
-    command_handler_init(&pids[0], PIDS_NUMBER);
+    command_handler_init(&pid0, PIDS_NUMBER);
     serial_communication_init(9600, handle_command);
 }
 
 int main(void)
 {
     init_drivers();
-    int show_expected_temperature_cycles = 0;
-    int number_of_cycles = 1000/DISPLAY_TEMP_UPDATE_TIME*2;
-    unsigned short is_on_stand = 0;
-    unsigned short is_on_stand_remembered_temperature = 0;
+    uint32_t show_expected_temperature_cycles = 0;
+    uint32_t number_of_cycles = 1000/DISPLAY_TEMP_UPDATE_TIME*2;
+    
+    uint8_t is_on_stand = 0;
+    Q15_t is_on_stand_remembered_temperature = 0;
+
+    heater_enable(&heater0);
 
     while(1)
     {   
@@ -104,19 +107,32 @@ int main(void)
 
         MILLIS_DELAY(UPDATE_PID, PID_PERIOD_MS)
         {
-            pid_process(&pids[0]);
+            Q15_t temp = thermoCouple_get_temperature(&thermocouple0);
+            if(temp > Q15_from_int(450))
+            {
+                //Overheating protection
+                pid0.expectedTemperature = 0;
+                heater_disable(&heater0);
+            }
+
+            uint8_t pid_result = pid_process(&pid0, temp);
+            heater_set_power_percentage(&heater0, pid_result);
         }
 
         MILLIS_DELAY(SHOW_CURRENT_TEMPERATURE, DISPLAY_TEMP_UPDATE_TIME)
         {
             if (show_expected_temperature_cycles > 0)
+            {
+                show_expected_temperature_cycles--;
                 if (is_on_stand)
-                    ui_print_desired_temperature(is_on_stand_remembered_temperature);
+                    ui_print_desired_temperature(Q15_to_int(is_on_stand_remembered_temperature));
                 else
-                    ui_print_desired_temperature(pids[0].expectedTemperature);
+                    ui_print_desired_temperature(Q15_to_int(pid0.expectedTemperature));
+            }
             else
-                ui_print_current_temperature(pids[0].currentTemperature, is_on_stand);
-            show_expected_temperature_cycles--;
+            {
+                ui_print_current_temperature(Q15_to_int(pid0.currentTemperature), is_on_stand);
+            }
         }
         
         if(gpio_is_low(&KEYBOARD_INCREASE_TEMP_GPIO))
@@ -125,11 +141,13 @@ int main(void)
             {
                 if (is_on_stand)
                 {
-                    if (is_on_stand_remembered_temperature < 500)
-                        is_on_stand_remembered_temperature += 10;
+                    if (is_on_stand_remembered_temperature < Q15_from_int(500))
+                        is_on_stand_remembered_temperature += Q15_from_int(10);
                 }
-                else if(pids[0].expectedTemperature < 500)
-                    pids[0].expectedTemperature += 10;
+                else if(pid0.expectedTemperature < Q15_from_int(500))
+                {
+                    pid0.expectedTemperature += Q15_from_int(10);
+                }
                 show_expected_temperature_cycles = number_of_cycles;
             }
         } 
@@ -140,12 +158,14 @@ int main(void)
             {
                 if (is_on_stand)
                 {
-                    if (is_on_stand_remembered_temperature >=10)
-                        is_on_stand_remembered_temperature -= 10;
+                    if (is_on_stand_remembered_temperature >= Q15_from_int(10))
+                        is_on_stand_remembered_temperature -= Q15_from_int(10);
                 
                 }
-                else if(pids[0].expectedTemperature >= 10)
-                    pids[0].expectedTemperature -= 10;
+                else if(pid0.expectedTemperature >= Q15_from_int(10))
+                {
+                    pid0.expectedTemperature -= Q15_from_int(10);
+                }
                 show_expected_temperature_cycles = number_of_cycles;
             }
         }
@@ -156,8 +176,8 @@ int main(void)
             {
                 if (is_on_stand == 0)
                 {
-                    is_on_stand_remembered_temperature = pids[0].expectedTemperature;
-                    pids[0].expectedTemperature = 0;
+                    is_on_stand_remembered_temperature = pid0.expectedTemperature;
+                    pid0.expectedTemperature = 0;
                 }
                 is_on_stand = 1;
             }
@@ -166,7 +186,7 @@ int main(void)
                 if (is_on_stand == 1)
                 {
                     is_on_stand = 0;
-                    pids[0].expectedTemperature = is_on_stand_remembered_temperature;
+                    pid0.expectedTemperature = is_on_stand_remembered_temperature;
                 }
             }
         }

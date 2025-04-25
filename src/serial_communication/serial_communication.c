@@ -4,11 +4,11 @@
 #include "inc/serial_crc.h"
 #include <util/atomic.h>
 
-static int timeout = 2;
-static unsigned char buffer[BUFFER_LENGTH];
-static unsigned char buffer_counter = 0;
-static unsigned char transmitting_counter = 0;
-static unsigned long last_buffer_counter_update_time = 0;
+static uint32_t timeout = 2;
+static uint8_t buffer[BUFFER_LENGTH];
+static uint8_t buffer_counter = 0;
+static uint8_t transmitting_counter = 0;
+static uint32_t last_buffer_counter_update_time = 0;
 
 static SERIAL_PROCESS_STATE state = UNINITIALIZED;
 static command_hander_t Command_handler;
@@ -32,7 +32,7 @@ void serial_transmit_callback()
 
 }
 
-void serial_receive_callback(char symbol)
+void serial_receive_callback(uint8_t symbol)
 {
     last_buffer_counter_update_time = millis();
     buffer[buffer_counter] = symbol;
@@ -44,8 +44,8 @@ void serial_receive_callback(char symbol)
 
 void serial_process()
 {
-    static unsigned char packet_length = 0;
-    static unsigned char data_length = 0;
+    static uint8_t packet_length = 0;
+    static uint8_t data_length = 0;
 
     switch(state)
     {
@@ -72,11 +72,11 @@ void serial_process()
             if(buffer_counter >= packet_length)
             {
                 usart_receive_byte_interrupt_disable();
-                unsigned short caluclated_crc = CRC16(buffer, packet_length-2);
-                unsigned short received_crc = buffer[buffer_counter-2] | (buffer[buffer_counter-1] << 8);
+                uint16_t caluclated_crc = CRC16(buffer, packet_length-2);
+                uint16_t received_crc = buffer[buffer_counter-2] | (buffer[buffer_counter-1] << 8);
                 if(caluclated_crc == received_crc)
                 {
-                    unsigned short cmd = buffer[0] | (buffer[1] << 8);
+                    uint16_t cmd = buffer[0] | (buffer[1] << 8);
                     command_response_t result = Command_handler(cmd, &buffer[3], data_length);
                     serial_write_response(result.response_code, result.data, result.data_length);
                 }
@@ -102,30 +102,35 @@ void serial_process()
     }
 }
 
-void serial_write_response(unsigned char response, unsigned char* data, unsigned char data_length)
+void serial_write_response(uint8_t response, uint8_t* data, uint8_t data_length)
 {
-    unsigned char packet_length = data_length + 4;
+    uint8_t packet_length = data_length + 4;
     buffer[0] = response;
     buffer[1] = data_length;
 
-    for(unsigned char i = 0; i < (data_length); i++)
+    for(uint8_t i = 0; i < (data_length); i++)
         buffer[i+2] = data[i];
 
-    unsigned short caluclated_crc = CRC16(buffer, (packet_length-2));
+    uint16_t caluclated_crc = CRC16(buffer, (packet_length-2));
     buffer[packet_length-2] = caluclated_crc & 0xff;
     buffer[packet_length-1] = (caluclated_crc >> 8) & 0xff;
 
     buffer_counter = packet_length;
 }
 
-void serial_communication_init(unsigned int usartBaudrate, command_hander_t command_handler)
+void serial_communication_init(uint32_t usartBaudrate, command_hander_t command_handler)
 {
     transmit_callback_t transmit_callback = (transmit_callback_t)serial_transmit_callback;
     receive_callback_t receive_callback = (receive_callback_t)serial_receive_callback;
     Command_handler = command_handler;
-    timeout = ((float)1000/(usartBaudrate/8)*4)+1;
+
+    // Calculate UART receive timeout in milliseconds based on the time required to receive ~4 bytes.
+    // Ensures the timeout is never less than 2 ms. All operations are integer-based for performance.
+    uint32_t bytesPerSec = usartBaudrate / 8;
+    timeout = (4000 + bytesPerSec - 1) / bytesPerSec;
     if(timeout < 2)
         timeout = 2;
+
     usart_init(usartBaudrate, transmit_callback, receive_callback);
 
     state = RECEIVING_HEADER;

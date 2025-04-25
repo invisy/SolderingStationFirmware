@@ -3,6 +3,7 @@
 
 #include "../../inc/config.h"
 #include "../../core/inc/eeprom.h"
+#include "../../core/inc/q15.h"
 
 typedef enum
 {
@@ -11,8 +12,8 @@ typedef enum
     KD = PID_KD_ADDRESS
 } PIDCoefficientType;
 
-float get_pid_coefficient(PIDCoefficientType coefficientType, char pidId);
-void set_pid_coefficient(PIDCoefficientType coefficientType, char pidId, float value);
+Q15_t get_pid_coefficient(PIDCoefficientType coefficientType, uint8_t pidId);
+void set_pid_coefficient(PIDCoefficientType coefficientType, uint8_t pidId, Q15_t value);
 
 
 #endif

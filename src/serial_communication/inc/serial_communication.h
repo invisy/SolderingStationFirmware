@@ -1,6 +1,8 @@
 #ifndef _SERIAL_COMMUNICATION_H_
 #define _SERIAL_COMMUNICATION_H_
 
+#include <stdint.h>
+
 #define BUFFER_LENGTH 255
 #define MAX_DATA_LENGTH 250
 
@@ -15,11 +17,11 @@ typedef enum {
 typedef struct
 {
     RESPONSE_CODE response_code;
-    unsigned char data[BUFFER_LENGTH];
-    unsigned char data_length;
+    uint8_t data[BUFFER_LENGTH];
+    uint8_t data_length;
 } command_response_t;
 
-typedef command_response_t(*command_hander_t)(unsigned short, unsigned char*, unsigned char);
+typedef command_response_t(*command_hander_t)(uint16_t, uint8_t*, uint8_t);
 
 typedef enum {
     UNINITIALIZED,
@@ -28,8 +30,8 @@ typedef enum {
     TRANSMITTING_RESPONSE
 } SERIAL_PROCESS_STATE;
 
-void serial_communication_init(unsigned int usartBaudrate, command_hander_t command_handler);
-void serial_write_response(unsigned char response, unsigned char* data, unsigned char data_length);
+void serial_communication_init(uint32_t usartBaudrate, command_hander_t command_handler);
+void serial_write_response(uint8_t response, uint8_t* data, uint8_t data_length);
 void serial_process();
 
 #endif
