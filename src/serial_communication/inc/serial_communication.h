@@ -21,7 +21,7 @@ typedef struct
     uint8_t data_length;
 } command_response_t;
 
-typedef command_response_t(*command_hander_t)(uint16_t, uint8_t*, uint8_t);
+typedef command_response_t(*command_hander_t)(uint16_t,volatile uint8_t*, uint8_t);
 
 typedef enum {
     UNINITIALIZED,

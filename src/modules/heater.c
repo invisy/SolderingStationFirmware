@@ -1,5 +1,6 @@
 #include "inc/heater.h"
 #include "../core/inc/heater_timer.h"
+#include <util/atomic.h>
 
 static Heater_t* heaters[MAX_HEATERS];
 static uint8_t heatersNumber = 0;
@@ -47,20 +48,23 @@ void heater_init(Heater_t* heaterPtr, GPIO_t* gpio)
 
 void interrupt()
 {
-    for(int i=0;i<heatersNumber;i++)
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        Heater_t* currentHeater = heaters[i];
+        for(uint8_t i=0;i<heatersNumber;i++)
+        {
+            Heater_t* currentHeater = heaters[i];
 
-        bool isActive = currentHeater->currentHalfWave < currentHeater->powerPercentage;
-        
-        if(currentHeater->isEnabled && isActive && gpio_is_high(currentHeater->heaterGpio))
-            gpio_set_low(currentHeater->heaterGpio);
-        else if((!currentHeater->isEnabled || !isActive) && gpio_is_low(currentHeater->heaterGpio))
-            gpio_set_high(currentHeater->heaterGpio);
+            bool isActive = currentHeater->currentHalfWave < currentHeater->powerPercentage;
+            
+            if(currentHeater->isEnabled && isActive && gpio_is_high(currentHeater->heaterGpio))
+                gpio_set_low(currentHeater->heaterGpio);
+            else if((!currentHeater->isEnabled || !isActive) && gpio_is_low(currentHeater->heaterGpio))
+                gpio_set_high(currentHeater->heaterGpio);
 
-        if(currentHeater->currentHalfWave < 99)
-            currentHeater->currentHalfWave++;
-        else
-            currentHeater->currentHalfWave = 0;
+            if(currentHeater->currentHalfWave < 99)
+                currentHeater->currentHalfWave++;
+            else
+                currentHeater->currentHalfWave = 0;
+        }
     }
 }

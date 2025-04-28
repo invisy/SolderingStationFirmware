@@ -8,7 +8,7 @@ PID_t* pids[1];
 uint8_t pidsNumber = 0;
 
 
-static void handle_get_pid_devices_number_cmd(uint8_t* data, uint8_t data_length, command_response_t* response)
+static void handle_get_pid_devices_number_cmd(volatile uint8_t* data, uint8_t data_length, command_response_t* response)
 {
     if(data_length != 0)
         (*response).response_code = WRONG_ARGUMENTS_LENGTH;
@@ -21,7 +21,7 @@ static void handle_get_pid_devices_number_cmd(uint8_t* data, uint8_t data_length
     memcpy((*response).data, &responseModel, modelSize);
 }
 
-static void handle_get_pid_current_temperature_cmd(uint8_t* data, uint8_t data_length, command_response_t* response)
+static void handle_get_pid_current_temperature_cmd(volatile uint8_t* data, uint8_t data_length, command_response_t* response)
 {
     if(data_length != sizeof(get_pid_current_temperature_request))
         (*response).response_code = WRONG_ARGUMENTS_LENGTH;
@@ -39,7 +39,7 @@ static void handle_get_pid_current_temperature_cmd(uint8_t* data, uint8_t data_l
     memcpy((*response).data, &responseModel, modelSize);
 }
 
-static void handle_get_pid_expected_temperature_cmd(uint8_t* data, uint8_t data_length, command_response_t* response)
+static void handle_get_pid_expected_temperature_cmd(volatile uint8_t* data, uint8_t data_length, command_response_t* response)
 {
     if(data_length != sizeof(get_pid_expected_temperature_request))
         (*response).response_code = WRONG_ARGUMENTS_LENGTH;
@@ -57,7 +57,7 @@ static void handle_get_pid_expected_temperature_cmd(uint8_t* data, uint8_t data_
     memcpy((*response).data, &responseModel, modelSize);
 }
 
-static void handle_get_pid_coefficients_cmd(uint8_t* data, uint8_t data_length, command_response_t* response)
+static void handle_get_pid_coefficients_cmd(volatile uint8_t* data, uint8_t data_length, command_response_t* response)
 {
     if(data_length != sizeof(get_pid_coefs_request))
         (*response).response_code = WRONG_ARGUMENTS_LENGTH;
@@ -80,7 +80,7 @@ static void handle_get_pid_coefficients_cmd(uint8_t* data, uint8_t data_length, 
     memcpy((*response).data, &responseModel, modelSize);
 }
 
-static void handle_set_pid_expected_temperature_cmd(uint8_t* data, uint8_t data_length, command_response_t* response)
+static void handle_set_pid_expected_temperature_cmd(volatile uint8_t* data, uint8_t data_length, command_response_t* response)
 {
     if(data_length != sizeof(set_expected_temperature_request))
         (*response).response_code = WRONG_ARGUMENTS_LENGTH;
@@ -97,7 +97,7 @@ static void handle_set_pid_expected_temperature_cmd(uint8_t* data, uint8_t data_
     (*response).data_length = 0;
 }
 
-static void handle_set_pid_kp_coef_cmd(uint8_t* data, uint8_t data_length, command_response_t* response)
+static void handle_set_pid_kp_coef_cmd(volatile uint8_t* data, uint8_t data_length, command_response_t* response)
 {
     if(data_length != sizeof(set_pid_kp_coef_request))
         (*response).response_code = WRONG_ARGUMENTS_LENGTH;
@@ -114,7 +114,7 @@ static void handle_set_pid_kp_coef_cmd(uint8_t* data, uint8_t data_length, comma
     (*response).data_length = 0;
 }
 
-static void handle_set_pid_ki_coef_cmd(uint8_t* data, uint8_t data_length, command_response_t* response)
+static void handle_set_pid_ki_coef_cmd(volatile uint8_t* data, uint8_t data_length, command_response_t* response)
 {
     if(data_length != sizeof(set_pid_ki_coef_request))
         (*response).response_code = WRONG_ARGUMENTS_LENGTH;
@@ -131,7 +131,7 @@ static void handle_set_pid_ki_coef_cmd(uint8_t* data, uint8_t data_length, comma
     (*response).data_length = 0;
 }
 
-static void handle_set_pid_kd_coef_cmd(uint8_t* data, uint8_t data_length, command_response_t* response)
+static void handle_set_pid_kd_coef_cmd(volatile uint8_t* data, uint8_t data_length, command_response_t* response)
 {
     if(data_length != sizeof(set_pid_kd_coef_request))
         (*response).response_code = WRONG_ARGUMENTS_LENGTH;
@@ -148,7 +148,7 @@ static void handle_set_pid_kd_coef_cmd(uint8_t* data, uint8_t data_length, comma
     (*response).data_length = 0;
 }
 
-command_response_t handle_command(uint16_t cmd, uint8_t* data, uint8_t data_length)
+command_response_t handle_command(uint16_t cmd, volatile uint8_t* data, uint8_t data_length)
 {
     command_response_t response = { .response_code = WRONG_COMMAND, .data_length = 0 };
 

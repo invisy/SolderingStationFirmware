@@ -4,6 +4,6 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 
-uint16_t CRC16(uint8_t *pucFrame, uint16_t usLen);
+uint16_t CRC16(volatile uint8_t *pucFrame, uint16_t usLen);
 
 #endif

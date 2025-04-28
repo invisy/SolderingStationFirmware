@@ -5,6 +5,6 @@
 #include "../../modules/inc/pid.h"
 
 void command_handler_init(PID_t* pidArray, uint8_t length);
-command_response_t handle_command(uint16_t cmd, uint8_t* data, uint8_t data_length);
+command_response_t handle_command(uint16_t cmd, volatile uint8_t* data, uint8_t data_length);
 
 #endif

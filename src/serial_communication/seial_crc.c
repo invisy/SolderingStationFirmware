@@ -51,7 +51,7 @@ static const __flash uint8_t aCRCLo[] = {
     0x41, 0x81, 0x80, 0x40
 };
 
-uint16_t CRC16(uint8_t *pucFrame, uint16_t usLen)
+uint16_t CRC16(volatile uint8_t *pucFrame, uint16_t usLen)
 {
     uint8_t CRCHi = 0xFF;
     uint8_t CRCLo = 0xFF;

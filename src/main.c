@@ -6,8 +6,8 @@
 #include "modules/inc/settings_storage.h"
 #include "inc/config.h"
 #include "inc/ui.h"
-#include "serial_communication/inc/serial_communication.h"
-#include "serial_communication/inc/command_handler.h"
+//#include "serial_communication/inc/serial_communication.h"
+//#include "serial_communication/inc/command_handler.h"
 
 //DISPLAY GPIO
 SETUP_PIN(DISPLAY_SEGMENT_A, B, 1);                  //PB1
@@ -86,8 +86,8 @@ static void init_drivers()
 
     ui_init(&sevenSegDisplay);
 
-    command_handler_init(&pid0, PIDS_NUMBER);
-    serial_communication_init(9600, handle_command);
+    //command_handler_init(&pid0, PIDS_NUMBER);
+    //serial_communication_init(9600, handle_command);
 }
 
 int main(void)
@@ -103,7 +103,7 @@ int main(void)
 
     while(1)
     {   
-        serial_process();
+        //serial_process();
 
         MILLIS_DELAY(UPDATE_PID, PID_PERIOD_MS)
         {

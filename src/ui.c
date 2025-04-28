@@ -51,7 +51,6 @@ void ui_print_err(uint16_t value)
 {
     seven_seg_display_clear(segmentDisplay);
     seven_seg_display_print_symbol(segmentDisplay, E_SYMBOL, 1);
-    seven_seg_display_print_number(segmentDisplay, value, 2);
 }
 
 
